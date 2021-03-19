@@ -2,7 +2,7 @@ from collections import OrderedDict
 from sklearn.base import TransformerMixin
 from typing import List, Union
 import numpy as np
-
+import math
 
 class BoW(TransformerMixin):
     """
@@ -109,7 +109,18 @@ class TfIdf(TransformerMixin):
         """
         :param X: array of texts to be trained on
         """
-        raise NotImplementedError
+        # raise NotImplementedError
+        reviewTFDict = {}
+        x = ' '.join(X).split()
+        for word in x:
+            if word in reviewTFDict:
+                reviewTFDict[word] += 1
+            else:
+                reviewTFDict[word] = 1
+        # Computes tf for each word
+        for word in reviewTFDict:
+            reviewTFDict[word] = reviewTFDict[word] / len(x)
+        self.bow = list(reviewTFDict.keys())
 
         # fit method must always return self
         return self
@@ -121,9 +132,31 @@ class TfIdf(TransformerMixin):
         :param text: text to be transformed
         :return tf_idf: tf-idf features
         """
+        reviewTFDict = {}
+        x = text.split()
+        for word in x:
+            if word in reviewTFDict:
+                reviewTFDict[word] += 1
+            else:
+                reviewTFDict[word] = 1
+        # Computes tf for each word
+        for word in reviewTFDict:
+            reviewTFDict[word] = reviewTFDict[word] / len(x)
 
-        result = None
-        raise NotImplementedError
+        countDict = {}
+        # Run through each review's tf dictionary and increment countDict's (word, doc) pair
+        for review in reviewTFDict:
+            for word in review:
+                if word in countDict:
+                    countDict[word] += 1
+                else:
+                    countDict[word] = 1
+        idfDict = {}
+        for word in countDict:
+            idfDict[word] = math.log(len(x) / countDict[word])
+        result = list(idfDict.values())
+        print(result)
+        #raise NotImplementedError
         return np.array(result, "float32")
 
     def transform(self, X: np.ndarray, y=None) -> np.ndarray:
