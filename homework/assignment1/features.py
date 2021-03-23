@@ -110,7 +110,7 @@ class TfIdf(TransformerMixin):
         :param X: array of texts to be trained on
         """
         # raise NotImplementedError
-        reviewTFDict = {}
+        reviewTFDict = OrderedDict()
         x = ' '.join(X).split()
         for word in x:
             if word in reviewTFDict:
@@ -120,8 +120,8 @@ class TfIdf(TransformerMixin):
         # Computes tf for each word
         for word in reviewTFDict:
             reviewTFDict[word] = reviewTFDict[word] / len(x)
-        self.bow = list(reviewTFDict.keys())
-
+        #self.bow = list(reviewTFDict.keys())
+        self.idf = reviewTFDict
         # fit method must always return self
         return self
 
@@ -132,7 +132,7 @@ class TfIdf(TransformerMixin):
         :param text: text to be transformed
         :return tf_idf: tf-idf features
         """
-        reviewTFDict = {}
+        '''reviewTFDict = {}
         x = text.split()
         for word in x:
             if word in reviewTFDict:
@@ -141,21 +141,33 @@ class TfIdf(TransformerMixin):
                 reviewTFDict[word] = 1
         # Computes tf for each word
         for word in reviewTFDict:
-            reviewTFDict[word] = reviewTFDict[word] / len(x)
+            reviewTFDict[word] = reviewTFDict[word] / len(x)'''
+            # print(word, ":", reviewTFDict[word])
+            #print('separator')
+        #print(len(list(reviewTFDict.keys())))
+
+        # string to list of words
+        word_list = text.split()
+        result = []
+        alpha = 1
 
         countDict = {}
         # Run through each review's tf dictionary and increment countDict's (word, doc) pair
-        for review in reviewTFDict:
-            for word in review:
-                if word in countDict:
-                    countDict[word] += 1
-                else:
-                    countDict[word] = 1
+        for word in word_list:
+          if word in countDict:
+            countDict[word] += 1
+          else:
+            countDict[word] = 1
         idfDict = {}
         for word in countDict:
-            idfDict[word] = math.log(len(x) / countDict[word])
-        result = list(idfDict.values())
-        print(result)
+            idfDict[word] = math.log(self.k / (countDict[word] + alpha))
+       
+        for word in self.idf:
+            if word in idfDict:
+                result.append(idfDict[word])
+            else:
+                result.append(0)
+        # print(result)
         #raise NotImplementedError
         return np.array(result, "float32")
 
